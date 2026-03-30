@@ -103,7 +103,7 @@ export default function Home() {
             Pozpátku!
           </h1>
           <p className="text-lg text-zinc-600 leading-relaxed">
-            Napiš text a my ti ho otočíme pozpátku!
+            Napiš text a já ti ho otočím pozpátku!
             <br />
             <span className="text-sm text-zinc-400">
               Každé slovo se převrátí, ale zůstane na svém místě.
