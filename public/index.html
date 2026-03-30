@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pozpátku - Otočení textu pozpátku</title>
+  <meta name="description" content="Online generátor pro převracení českého textu pozpátku. Každé slovo se otočí, slovosled zůstane. Ideální pro táborové hry a šifrovačky.">
+  <link rel="preload" as="image" href="maskot.avif" type="image/avif">
+  <link rel="preload" as="image" href="maskot.webp" type="image/webp">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9f5df;
+      color: #3f3f46;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container { width: 100%; max-width: 640px; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 2rem; }
+    .header .mascot { width: 260px; height: auto; margin: 0 auto 0.5rem; display: block; }
+    .header h1 {
+      font-size: clamp(2.2rem, 8vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #a855f7;
+      margin-bottom: 0.5rem;
+    }
+    .header .subtitle { font-size: 1.1rem; color: #52525b; }
+    .header .subtitle-small { font-size: 0.85rem; color: #57534e; margin-top: 0.25rem; }
+
+    /* Examples */
+    .examples-label { font-size: 0.85rem; font-weight: 600; color: #57534e; margin-bottom: 0.5rem; }
+    .examples { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .examples button {
+      font-size: 0.85rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      background: #fff;
+      border: 2px solid #e4e4e7;
+      color: #3f3f46;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .examples button:hover {
+      border-color: #fdba74;
+      background: #fff7ed;
+      transform: scale(1.05);
+    }
+    .examples button:active { transform: scale(0.95); }
+
+    /* Input */
+    .input-wrap { position: relative; margin-bottom: 1rem; }
+    textarea {
+      width: 100%;
+      border-radius: 1rem;
+      background: #fff;
+      border: 2px solid #e4e4e7;
+      padding: 1rem;
+      font-size: 1.05rem;
+      font-family: inherit;
+      color: #3f3f46;
+      resize: vertical;
+      min-height: 140px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #c084fc;
+      box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.15);
+    }
+    textarea::placeholder { color: #78716c; }
+    .clear-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      background: #f4f4f5;
+      border: none;
+      color: #71717a;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .clear-btn.visible { display: flex; }
+    .clear-btn:hover { background: #e4e4e7; color: #52525b; }
+
+    /* Checkbox */
+    .option {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.85rem;
+      color: #57534e;
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: 1.5rem;
+    }
+    .option input { width: 1rem; height: 1rem; accent-color: #a855f7; }
+
+    /* Arrow */
+    .arrow { text-align: center; font-size: 2rem; margin-bottom: 1rem; display: none; }
+    .arrow.visible { display: block; }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-3deg); }
+      75% { transform: rotate(3deg); }
+    }
+    .arrow.wiggle { animation: wiggle 0.6s ease-in-out; }
+
+    /* Output */
+    .output-wrap { position: relative; display: none; margin-bottom: 1.5rem; }
+    .output-wrap.visible { display: block; }
+    .output {
+      width: 100%;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, #faf5ff, #fdf2f8);
+      border: 2px solid #d8b4fe;
+      padding: 1.25rem;
+      min-height: 120px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 1.15rem;
+      line-height: 1.7;
+      color: #7e22ce;
+      font-weight: 500;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      background: #a855f7;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+    }
+    .copy-btn:hover { background: #9333ea; transform: scale(1.05); }
+    .copy-btn:active { transform: scale(0.95); }
+
+    /* How it works */
+    .howto {
+      border-radius: 1rem;
+      background: #fff;
+      border: 2px solid #f4f4f5;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .howto h2 { font-size: 1.1rem; font-weight: 700; color: #3f3f46; margin-bottom: 0.75rem; }
+    .howto p { font-size: 0.9rem; color: #57534e; margin-bottom: 0.4rem; }
+    .howto .word { font-weight: 600; color: #3f3f46; }
+    .howto .reversed { font-weight: 600; color: #7e22ce; }
+    .howto .note { color: #57534e; margin-top: 0.5rem; }
+
+    /* Footer */
+    .footer { margin-top: 3rem; text-align: center; font-size: 0.75rem; color: #57534e; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="header">
+      <picture>
+        <source srcset="maskot.avif" type="image/avif">
+        <source srcset="maskot.webp" type="image/webp">
+        <img src="maskot.webp" alt="Maskot Pozpátku" class="mascot" width="2100" height="1536">
+      </picture>
+      <h1>Pozpátku!</h1>
+      <p class="subtitle">Napiš text a my ti ho otočíme pozpátku!</p>
+      <p class="subtitle-small">Každé slovo se převrátí, ale zůstane na svém místě.</p>
+    </div>
+
+    <p class="examples-label">Zkus jednu z písniček:</p>
+    <div class="examples" role="group" aria-label="Příklady písniček">
+      <button onclick="loadExample(0)">🥁 Tluče bubeníček</button>
+      <button onclick="loadExample(1)">🐕 Skákal pes</button>
+      <button onclick="loadExample(2)">👧 Holka modrooká</button>
+      <button onclick="loadExample(3)">🐱 Kočka leze dírou</button>
+    </div>
+
+    <div class="input-wrap">
+      <label for="input" class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0">Text k převrácení</label>
+      <textarea id="input" placeholder="Sem napiš nebo vlož text..." aria-label="Text k převrácení" autocomplete="off"></textarea>
+      <input type="text" name="website" id="hp-field" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0">
+      <button class="clear-btn" id="clearBtn" onclick="clearInput()" aria-label="Smazat text">✕</button>
+    </div>
+
+    <label class="option" for="keepPunct">
+      <input type="checkbox" id="keepPunct" checked onchange="update()">
+      Zachovat interpunkci na místě (tečky, čárky...)
+    </label>
+
+    <div class="arrow" id="arrow" aria-hidden="true">⬇️</div>
+
+    <div class="output-wrap" id="outputWrap">
+      <div class="output" id="output" aria-live="polite" aria-label="Převrácený text"></div>
+      <button class="copy-btn" id="copyBtn" onclick="copyOutput()">Kopírovat 📋</button>
+    </div>
+
+    <div class="howto" id="howto">
+      <h2>Jak to funguje?</h2>
+      <p><span class="word">Tluče</span> → <span class="reversed">ečulT</span></p>
+      <p><span class="word">bubeníček</span> → <span class="reversed">kečínebub</span></p>
+      <p><span class="word">Tluče bubeníček</span> → <span class="reversed">ečulT kečínebub</span></p>
+      <p class="note">Každé slovo se otočí pozpátku, ale slovosled zůstane stejný!</p>
+    </div>
+
+    <p class="footer">Vytvořeno pro táborové hry a šifrovačky &middot; <a href="https://github.com/kasparek-net/pozpatku" style="color:#78716c;text-decoration:underline" target="_blank" rel="noopener">GitHub</a></p>
+  </main>
+
+  <script>
+    var examples = [
+      "Tluče bubeníček, tluče na buben.\nMá paličky ze dřeva bukového,\nz telecí kůže buben.",
+      "Skákal pes přes oves,\npřes zelenou louku.\nŠel za ním myslivec,\npéro na klobouku.",
+      "Holka modrooká,\nnesedávej u potoka.\nHolka modrooká,\nnesedávej tam.",
+      "Kočka leze dírou,\npes oknem.\nKočka leze dírou,\npes oknem.\nNebude-li pršet,\nnezmoknem."
+    ];
+
+    var inputEl = document.getElementById('input');
+    var outputEl = document.getElementById('output');
+    var outputWrap = document.getElementById('outputWrap');
+    var arrowEl = document.getElementById('arrow');
+    var clearBtn = document.getElementById('clearBtn');
+    var copyBtn = document.getElementById('copyBtn');
+    var howto = document.getElementById('howto');
+    var keepPunctEl = document.getElementById('keepPunct');
+    var hpField = document.getElementById('hp-field');
+
+    inputEl.addEventListener('input', update);
+
+    function isBot() { return hpField && hpField.value.length > 0; }
+
+    function isPunct(ch) {
+      return /[^\p{L}\p{N}\s]/u.test(ch);
+    }
+
+    function reverseWord(word, keepPunct) {
+      if (!word) return word;
+      var chars = Array.from(word);
+
+      if (!keepPunct) return chars.reverse().join('');
+
+      var leading = '';
+      var trailing = '';
+
+      while (chars.length && isPunct(chars[0])) {
+        leading += chars.shift();
+      }
+      while (chars.length && isPunct(chars[chars.length - 1])) {
+        trailing = chars.pop() + trailing;
+      }
+
+      return leading + chars.reverse().join('') + trailing;
+    }
+
+    function reverseText(text, keepPunct) {
+      return text
+        .replace(/\r\n/g, '\n')
+        .split('\n')
+        .map(function(line) {
+          return line
+            .split(/( +)/)
+            .map(function(s) {
+              return /^ *$/.test(s) ? s : reverseWord(s, keepPunct);
+            })
+            .join('');
+        })
+        .join('\n');
+    }
+
+    function update() {
+      var text = inputEl.value;
+      var hasText = text.trim().length > 0;
+      var keepPunct = keepPunctEl.checked;
+
+      clearBtn.classList.toggle('visible', text.length > 0);
+      arrowEl.classList.toggle('visible', hasText);
+      outputWrap.classList.toggle('visible', hasText);
+      howto.style.display = hasText ? 'none' : 'block';
+
+      if (hasText && !isBot()) {
+        outputEl.textContent = reverseText(text, keepPunct);
+        copyBtn.textContent = 'Kopírovat 📋';
+      }
+    }
+
+    function loadExample(index) {
+      inputEl.value = examples[index];
+      update();
+      arrowEl.classList.remove('wiggle');
+      void arrowEl.offsetWidth;
+      arrowEl.classList.add('wiggle');
+    }
+
+    function clearInput() {
+      inputEl.value = '';
+      update();
+      inputEl.focus();
+    }
+
+    function copyOutput() {
+      var text = outputEl.textContent;
+      if (!text) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          copyBtn.textContent = 'Zkopírováno! ✓';
+          setTimeout(function() { copyBtn.textContent = 'Kopírovat 📋'; }, 2000);
+        });
+      } else {
+        var range = document.createRange();
+        range.selectNodeContents(outputEl);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('copy');
+        sel.removeAllRanges();
+        copyBtn.textContent = 'Zkopírováno! ✓';
+        setTimeout(function() { copyBtn.textContent = 'Kopírovat 📋'; }, 2000);
+      }
+    }
+  </script>
+</body>
+</html>

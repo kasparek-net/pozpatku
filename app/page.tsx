@@ -1,19 +1,27 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 
 const EXAMPLES = [
   {
     label: 'Tluče bubeníček',
+    emoji: '🥁',
     text: 'Tluče bubeníček, tluče na buben.\nMá paličky ze dřeva bukového,\nz telecí kůže buben.',
   },
   {
     label: 'Skákal pes',
+    emoji: '🐕',
     text: 'Skákal pes přes oves,\npřes zelenou louku.\nŠel za ním myslivec,\npéro na klobouku.',
   },
   {
     label: 'Holka modrooká',
+    emoji: '👧',
     text: 'Holka modrooká,\nnesedávej u potoka.\nHolka modrooká,\nnesedávej tam.',
+  },
+  {
+    label: 'Kočka leze dírou',
+    emoji: '🐱',
+    text: 'Kočka leze dírou,\npes oknem.\nKočka leze dírou,\npes oknem.\nNebude-li pršet,\nnezmoknem.',
   },
 ]
 
@@ -57,80 +65,154 @@ export default function Home() {
   const [input, setInput] = useState('')
   const [keepPunct, setKeepPunct] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [wiggle, setWiggle] = useState(false)
 
-  const output = reverse(input, keepPunct)
+  const hasInput = input.trim().length > 0
+  const output = useMemo(() => reverse(input, keepPunct), [input, keepPunct])
+
+  useEffect(() => {
+    if (!copied) return
+    const t = setTimeout(() => setCopied(false), 2000)
+    return () => clearTimeout(t)
+  }, [copied])
+
+  useEffect(() => {
+    if (!wiggle) return
+    const t = setTimeout(() => setWiggle(false), 600)
+    return () => clearTimeout(t)
+  }, [wiggle])
 
   const copy = useCallback(async () => {
     if (!output) return
     await navigator.clipboard.writeText(output)
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }, [output])
 
   return (
-    <main className="min-h-dvh flex flex-col items-center px-4 py-12 sm:py-16">
+    <main className="min-h-dvh flex flex-col items-center px-4 py-8 sm:py-12">
       <div className="w-full max-w-2xl">
-        <h1 className="text-4xl sm:text-5xl font-bold text-center tracking-tight mb-2">
-          Pozpátku
-        </h1>
-        <p className="text-zinc-400 text-center mb-8 text-sm sm:text-base leading-relaxed">
-          Otočí každé slovo v textu pozpátku, slovosled zůstane stejný.
-          <br className="hidden sm:block" />{' '}
-          Pro táborové hry, šifrovačky a zábavu.
-        </p>
-
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-zinc-500 uppercase tracking-wide">
-              Příklady:
+        <div className="text-center mb-8">
+          <img
+            src="/maskot.webp"
+            alt="Maskot Pozpátku"
+            width={2100}
+            height={1536}
+            className="mx-auto w-52 sm:w-64 h-auto mb-2"
+          />
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-purple-500 mb-3">
+            Pozpátku!
+          </h1>
+          <p className="text-lg text-zinc-600 leading-relaxed">
+            Napiš text a my ti ho otočíme pozpátku!
+            <br />
+            <span className="text-sm text-zinc-400">
+              Každé slovo se převrátí, ale zůstane na svém místě.
             </span>
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-zinc-500 mb-2">
+            Zkus jednu z písniček:
+          </p>
+          <div className="flex flex-wrap gap-2">
             {EXAMPLES.map((ex) => (
               <button
                 key={ex.label}
-                onClick={() => setInput(ex.text)}
-                className="text-sm px-3 py-1 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer"
+                onClick={() => {
+                  setInput(ex.text)
+                  setWiggle(true)
+                }}
+                className="text-sm px-4 py-2 rounded-full bg-white border-2 border-zinc-200 hover:border-orange-300 hover:bg-orange-50 text-zinc-700 font-medium transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
               >
+                <span className="mr-1.5">{ex.emoji}</span>
                 {ex.label}
               </button>
             ))}
           </div>
+        </div>
 
+        <div className="relative mb-4">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Sem napiš nebo vlož text…"
-            rows={6}
-            className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40 resize-y transition-shadow"
-            autoFocus
+            placeholder="Sem napiš nebo vlož text..."
+            rows={5}
+            className="w-full rounded-2xl bg-white border-2 border-zinc-200 p-4 text-zinc-800 text-lg placeholder:text-zinc-400 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 resize-y transition-all shadow-sm"
           />
-
-          <label className="flex items-center gap-2.5 text-sm text-zinc-400 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={keepPunct}
-              onChange={(e) => setKeepPunct(e.target.checked)}
-              className="size-4 rounded accent-emerald-500"
-            />
-            Zachovat interpunkci na místě
-          </label>
-
-          {input.trim() && (
-            <div className="relative group">
-              <div className="w-full rounded-xl bg-zinc-900 border border-emerald-500/20 p-4 min-h-[120px] whitespace-pre-wrap break-words text-lg leading-relaxed text-emerald-400 selection:bg-emerald-500/30">
-                {output}
-              </div>
-              <button
-                onClick={copy}
-                className="absolute top-3 right-3 text-xs font-medium px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer"
-              >
-                {copied ? 'Zkopírováno!' : 'Kopírovat'}
-              </button>
-            </div>
+          {input && (
+            <button
+              onClick={() => setInput('')}
+              className="absolute top-3 right-3 size-7 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-400 hover:text-zinc-600 flex items-center justify-center text-sm transition-colors cursor-pointer"
+            >
+              x
+            </button>
           )}
         </div>
 
-        <p className="mt-16 text-center text-xs text-zinc-700">
-          Vytvořeno pro táborové hry
+        <label className="inline-flex items-center gap-2.5 text-sm text-zinc-500 cursor-pointer select-none mb-6">
+          <input
+            type="checkbox"
+            checked={keepPunct}
+            onChange={(e) => setKeepPunct(e.target.checked)}
+            className="size-4 rounded accent-purple-500"
+          />
+          Zachovat interpunkci na místě (tečky, čárky...)
+        </label>
+
+        {hasInput && (
+          <div className="flex justify-center mb-4">
+            <div className={`text-4xl select-none ${wiggle ? 'animate-wiggle' : ''}`}>
+              ⬇️
+            </div>
+          </div>
+        )}
+
+        {hasInput && (
+          <div className="relative">
+            <div className="w-full rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 p-5 min-h-[120px] whitespace-pre-wrap break-words text-xl leading-relaxed text-purple-700 font-medium shadow-sm selection:bg-purple-200">
+              {output}
+            </div>
+            <button
+              onClick={copy}
+              className="absolute top-3 right-3 text-sm font-semibold px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-600 text-white transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+            >
+              {copied ? 'Zkopírováno! ✓' : 'Kopírovat 📋'}
+            </button>
+          </div>
+        )}
+
+        {!hasInput && (
+          <div className="mt-8 rounded-2xl bg-white border-2 border-zinc-100 p-6 shadow-sm">
+            <h2 className="font-bold text-lg text-zinc-700 mb-3">
+              Jak to funguje?
+            </h2>
+            <div className="space-y-2 text-sm text-zinc-500">
+              <p>
+                <span className="font-semibold text-zinc-700">Tluče</span>
+                {' → '}
+                <span className="font-semibold text-purple-600">ečulT</span>
+              </p>
+              <p>
+                <span className="font-semibold text-zinc-700">bubeníček</span>
+                {' → '}
+                <span className="font-semibold text-purple-600">kečínebub</span>
+              </p>
+              <p>
+                <span className="font-semibold text-zinc-700">Tluče bubeníček</span>
+                {' → '}
+                <span className="font-semibold text-purple-600">ečulT kečínebub</span>
+              </p>
+              <p className="pt-2 text-zinc-400">
+                Každé slovo se otočí pozpátku, ale slovosled zůstane stejný!
+              </p>
+            </div>
+          </div>
+        )}
+
+        <p className="mt-12 text-center text-xs text-zinc-400">
+          Vytvořeno pro táborové hry a šifrovačky &middot;{' '}
+          <a href="https://github.com/kasparek-net/pozpatku" className="underline hover:text-zinc-600" target="_blank" rel="noopener">GitHub</a>
         </p>
       </div>
     </main>
