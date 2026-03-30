@@ -123,7 +123,7 @@ export default function Home() {
                   setInput(ex.text)
                   setWiggle(true)
                 }}
-                className="text-sm px-4 py-2 rounded-full bg-white border-2 border-zinc-200 hover:border-orange-300 hover:bg-orange-50 text-zinc-700 font-medium transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
+                className="text-sm px-4 py-2 rounded-full bg-white border-2 border-zinc-200 hover:border-[#60c5c1] hover:bg-[#f0fdfb] text-zinc-700 font-medium transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
               >
                 <span className="mr-1.5">{ex.emoji}</span>
                 {ex.label}
@@ -138,7 +138,7 @@ export default function Home() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Sem napiš nebo vlož text..."
             rows={5}
-            className="w-full rounded-2xl bg-white border-2 border-zinc-200 p-4 text-zinc-800 text-lg placeholder:text-zinc-400 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 resize-y transition-all shadow-sm"
+            className="w-full rounded-2xl bg-white border-2 border-zinc-200 p-4 text-zinc-800 text-lg placeholder:text-zinc-400 focus:outline-none focus:border-[#60c5c1] focus:ring-4 focus:ring-[#60c5c1]/15 resize-y transition-all shadow-sm"
           />
           {input && (
             <button
@@ -155,7 +155,7 @@ export default function Home() {
             type="checkbox"
             checked={keepPunct}
             onChange={(e) => setKeepPunct(e.target.checked)}
-            className="size-4 rounded accent-purple-500"
+            className="size-4 rounded accent-[#60c5c1]"
           />
           Zachovat interpunkci na místě (tečky, čárky...)
         </label>
@@ -191,17 +191,17 @@ export default function Home() {
               <p>
                 <span className="font-semibold text-zinc-700">Tluče</span>
                 {' → '}
-                <span className="font-semibold text-purple-600">ečulT</span>
+                <span className="font-semibold text-[#0e9a95]">ečulT</span>
               </p>
               <p>
                 <span className="font-semibold text-zinc-700">bubeníček</span>
                 {' → '}
-                <span className="font-semibold text-purple-600">kečínebub</span>
+                <span className="font-semibold text-[#0e9a95]">kečínebub</span>
               </p>
               <p>
                 <span className="font-semibold text-zinc-700">Tluče bubeníček</span>
                 {' → '}
-                <span className="font-semibold text-purple-600">ečulT kečínebub</span>
+                <span className="font-semibold text-[#0e9a95]">ečulT kečínebub</span>
               </p>
               <p className="pt-2 text-zinc-400">
                 Každé slovo se otočí pozpátku, ale slovosled zůstane stejný!
