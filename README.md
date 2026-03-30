@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="maskot.png" alt="Pozpátku maskot" width="300">
+  <img src="maskot-transparent.png" alt="Pozpátku maskot" width="300">
 </p>
 
 <h1 align="center">Pozpátku!</h1>
