@@ -320,15 +320,19 @@
       inputEl.focus();
     }
 
+    var copyTimer;
+    function showCopied() {
+      clearTimeout(copyTimer);
+      copyBtn.textContent = 'Zkopírováno! ✓';
+      copyTimer = setTimeout(function() { copyBtn.textContent = 'Kopírovat 📋'; }, 2000);
+    }
+
     function copyOutput() {
       var text = outputEl.textContent;
       if (!text) return;
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function() {
-          copyBtn.textContent = 'Zkopírováno! ✓';
-          setTimeout(function() { copyBtn.textContent = 'Kopírovat 📋'; }, 2000);
-        });
+        navigator.clipboard.writeText(text).then(showCopied);
       } else {
         var range = document.createRange();
         range.selectNodeContents(outputEl);
@@ -337,8 +341,7 @@
         sel.addRange(range);
         document.execCommand('copy');
         sel.removeAllRanges();
-        copyBtn.textContent = 'Zkopírováno! ✓';
-        setTimeout(function() { copyBtn.textContent = 'Kopírovat 📋'; }, 2000);
+        showCopied();
       }
     }
   </script>
